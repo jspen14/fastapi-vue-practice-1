@@ -1,9 +1,14 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
 class Message(BaseModel):
     id: str
-    name: str
+    role: Literal["user", "assistant"]
+    content: str
 
-    def get_name(self) -> str:
-        return self.name
+
+class SendMessage(BaseModel):
+    conversation_id: str
+    content: str

@@ -1,14 +1,24 @@
-from fastapi import APIRouter
+from uuid import uuid4
 
-from ..models.message import Message
+from fastapi import APIRouter, HTTPException
+
+from ..models.message import Message, SendMessage
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
+messages: dict[str, Message] = {}
 
-@router.get("/")
-async def read_messages() -> list[Message]:
-    return [
-        Message(id="1", name="Welcome"),
-        Message(id="2", name="Design review"),
-        Message(id="3", name="Ship notes"),
-    ]
+
+@router.post("")
+async def send_message(body: SendMessage) -> Message:
+    message = Message(id=str(uuid4()), role="user", content=body.content)
+    messages[body.conversation_id] = message
+    return message
+
+
+@router.get("/{conversation_id}")
+async def get_message(conversation_id: str) -> Message:
+    message = messages.get(conversation_id)
+    if message is None:
+        raise HTTPException(status_code=404, detail="Message not found")
+    return message
