@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import type { Message } from '../../types'
+import { ref } from "vue";
+
+import type { Message } from "../../types";
+import MessageInput from "./MessageInput.vue";
 
 defineProps<{
-  messages: Message[]
-}>()
+  messages: Message[];
+}>();
+
+const draft = ref("");
 </script>
 
 <template>
@@ -16,7 +21,9 @@ defineProps<{
         {{ message.content }}
       </p>
     </div>
-    <footer class="composer" />
+    <footer class="composer">
+      <MessageInput v-model="draft" />
+    </footer>
   </section>
 </template>
 
