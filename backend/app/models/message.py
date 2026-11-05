@@ -15,5 +15,5 @@ class Message(BaseModel):
 
 
 class SendMessage(BaseModel):
-    conversation_id: str
+    previous_response_id: str
     content: str

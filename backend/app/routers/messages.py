@@ -11,14 +11,19 @@ messages: dict[str, Message] = {}
 
 @router.post("")
 async def send_message(body: SendMessage) -> Message:
+    print("JTP-1")
     message = Message(id=str(uuid4()), role=Role.user, content=body.content)
-    messages[body.conversation_id] = message
+    messages[body.previous_response_id] = message
     return message
 
 
-@router.get("/{conversation_id}")
-async def get_message(conversation_id: str) -> Message:
-    message = messages.get(conversation_id)
+@router.get("/{previous_response_id}")
+async def get_message(previous_response_id: str) -> Message:
+    print("JTP-2")
+
+    message = messages.get(previous_response_id)
+
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
+
     return message
