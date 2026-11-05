@@ -1,10 +1,6 @@
 import axios from 'axios'
 
-export interface Message {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-}
+import type { Message } from './types'
 
 export const api = axios.create({
   baseURL: '/api',

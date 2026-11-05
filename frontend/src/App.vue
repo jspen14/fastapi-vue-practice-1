@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { getMessages, type Message } from './api'
+import { getMessages } from './api'
+import type { Message } from './types'
 import ChatInterface from './components/chat/ChatInterface.vue'
 
 const messages = ref<Message[]>([])
