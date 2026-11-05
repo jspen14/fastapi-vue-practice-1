@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
 
-from ..models.message import Message, SendMessage
+from ..models.message import Message, Role, SendMessage
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
@@ -11,7 +11,7 @@ messages: dict[str, Message] = {}
 
 @router.post("")
 async def send_message(body: SendMessage) -> Message:
-    message = Message(id=str(uuid4()), role="user", content=body.content)
+    message = Message(id=str(uuid4()), role=Role.user, content=body.content)
     messages[body.conversation_id] = message
     return message
 

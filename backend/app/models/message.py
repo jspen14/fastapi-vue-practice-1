@@ -1,11 +1,16 @@
-from typing import Literal
+from enum import StrEnum
 
 from pydantic import BaseModel
 
 
+class Role(StrEnum):
+    user = "user"
+    agent = "agent"
+
+
 class Message(BaseModel):
     id: str
-    role: Literal["user", "assistant"]
+    role: Role
     content: str
 
 
