@@ -1,9 +1,21 @@
+<script setup lang="ts">
+import type { Message } from '../../api'
+
+defineProps<{
+  messages: Message[]
+}>()
+</script>
+
 <template>
   <section class="chat" aria-label="Chat">
     <header class="header">
       <p class="label">Chat</p>
     </header>
-    <div class="thread" />
+    <div class="thread">
+      <p v-for="message in messages" :key="message.id" class="message">
+        {{ message.content }}
+      </p>
+    </div>
     <footer class="composer" />
   </section>
 </template>
@@ -32,5 +44,10 @@
 
 .thread {
   flex: 1;
+  padding: 0 1.5rem;
+}
+
+.message {
+  margin: 0 0 0.75rem;
 }
 </style>

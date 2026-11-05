@@ -1,11 +1,20 @@
-export interface RootResponse {
-  message: string
+import axios from 'axios'
+
+export interface Message {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
 }
 
-export async function fetchRoot(): Promise<RootResponse> {
-  const response = await fetch('/api')
-  if (!response.ok) {
-    throw new Error(`Request failed (${response.status})`)
-  }
-  return (await response.json()) as RootResponse
+export const api = axios.create({
+  baseURL: '/api',
+})
+
+const messages: Message[] = [
+  { id: '1', role: 'user', content: 'Where do I find the holiday hours?' },
+  { id: '2', role: 'assistant', content: 'Holiday hours are posted on the store page.' },
+]
+
+export async function getMessages(): Promise<Message[]> {
+  return messages
 }
