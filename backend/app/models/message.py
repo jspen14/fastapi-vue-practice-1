@@ -15,5 +15,10 @@ class Message(BaseModel):
 
 
 class SendMessage(BaseModel):
-    previous_response_id: str
     content: str
+    previous_response_id: str | None = None
+
+
+class MessageThread(BaseModel):
+    response_id: str
+    messages: list[Message]
