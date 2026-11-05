@@ -10,40 +10,35 @@ router = APIRouter(prefix="/messages", tags=["messages"])
 
 MODEL = "gpt-5.6-luna"
 
-
-def messages_from_page(page: object) -> list[Message]:
-    return [
-        message
-        for item in getattr(page, "data", [])
-        if (message := message_from_item(item))
-    ]
+ROLES = {"user": Role.user, "assistant": Role.agent}
 
 
-def message_from_item(item: object) -> Message | None:
-    if getattr(item, "type", None) != "message":
-        return None
-    role = getattr(item, "role", None)
-    if role == "user":
-        text = text_from_parts(item, "input_text")
-        mapped = Role.user
-    elif role == "assistant":
-        text = text_from_parts(item, "output_text") or text_from_parts(item, "input_text")
-        mapped = Role.agent
-    else:
-        return None
-    if text is None:
-        return None
-    return Message(id=item.id, role=mapped, content=text)
+def messages_from(items: list[object]) -> list[Message]:
+    messages: list[Message] = []
+
+    for item in items:
+        role = ROLES.get(getattr(item, "role", ""))
+        if getattr(item, "type", None) != "message" or role is None:
+            continue
+        text = "".join(
+            part.text
+            for part in getattr(item, "content", [])
+            if getattr(part, "type", None) in {"input_text", "output_text"}
+        ).strip()
+        if text:
+            messages.append(Message(id=item.id, role=role, content=text))
+    return messages
 
 
-def text_from_parts(item: object, part_type: str) -> str | None:
-    parts = [
-        part.text
-        for part in getattr(item, "content", [])
-        if getattr(part, "type", None) == part_type
-    ]
-    text = "".join(parts).strip()
-    return text or None
+# JTODO - move this into a messaging service
+def get_message_history_by_response_id(
+    client: OpenAI, response_id: str
+) -> list[Message]:
+    response = client.responses.retrieve(response_id)
+    page = client.responses.input_items.list(response.id, order="asc", limit=100)
+    messages = messages_from(page.data)
+    messages.extend(messages_from(response.output))
+    return messages
 
 
 @router.post("")
@@ -58,17 +53,20 @@ async def send_message(body: SendMessage) -> MessageThread:
             else {}
         ),
     )
-    page = client.responses.input_items.list(response.id, order="asc", limit=100)
-    return MessageThread(response_id=response.id, messages=messages_from_page(page))
+
+    return MessageThread(
+        response_id=response.id,
+        messages=get_message_history_by_response_id(client, response.id),
+    )
 
 
-@router.get("/{previous_response_id}")
-async def get_messages(previous_response_id: str) -> MessageThread:
+@router.get("/{response_id}")
+async def get_messages(response_id: str) -> MessageThread:
     client = OpenAI()
+
     try:
-        page = client.responses.input_items.list(
-            previous_response_id, order="asc", limit=100
-        )
+        messages = get_message_history_by_response_id(client, response_id)
     except NotFoundError:
         raise HTTPException(status_code=404, detail="Response not found")
-    return MessageThread(response_id=previous_response_id, messages=messages_from_page(page))
+
+    return MessageThread(response_id=response_id, messages=messages)
