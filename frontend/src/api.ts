@@ -6,10 +6,11 @@ export const api = axios.create({
   baseURL: "/api",
 });
 
-const messages: Message[] = [];
-
-export async function getMessages(): Promise<Message[]> {
-  return messages;
+export async function getMessages(responseId: string): Promise<Message[]> {
+  const { data } = await api.get<MessageThread>(
+    `/messages/${encodeURIComponent(responseId)}`,
+  );
+  return data.messages;
 }
 
 export async function sendMessage(
