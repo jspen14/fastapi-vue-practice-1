@@ -1,19 +1,36 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { getMessages } from './api'
-import type { Message } from './types'
+import { getMessages, sendMessage } from './api'
+import { Role, type Message } from './types'
 import ChatInterface from './components/chat/ChatInterface.vue'
 
 const messages = ref<Message[]>([])
+const responseId = ref<string | null>(null)
+const waiting = ref(false)
 
 onMounted(async () => {
   messages.value = await getMessages()
 })
+
+async function onSend(content: string) {
+  messages.value = [
+    ...messages.value,
+    { id: crypto.randomUUID(), role: Role.User, content },
+  ]
+  waiting.value = true
+  try {
+    const thread = await sendMessage(content, responseId.value)
+    messages.value = thread.messages
+    responseId.value = thread.response_id
+  } finally {
+    waiting.value = false
+  }
+}
 </script>
 
 <template>
-  <ChatInterface :messages="messages" />
+  <ChatInterface :messages="messages" :waiting="waiting" @send="onSend" />
 </template>
 
 <style>

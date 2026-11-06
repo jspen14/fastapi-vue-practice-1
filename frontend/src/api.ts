@@ -1,16 +1,24 @@
-import axios from 'axios'
+import axios from "axios";
 
-import { Role, type Message } from './types'
+import type { Message, MessageThread } from "./types";
 
 export const api = axios.create({
-  baseURL: '/api',
-})
+  baseURL: "/api",
+});
 
-const messages: Message[] = [
-  { id: '1', role: Role.User, content: 'Where do I find the holiday hours?' },
-  { id: '2', role: Role.Agent, content: 'Holiday hours are posted on the store page.' },
-]
+const messages: Message[] = [];
 
 export async function getMessages(): Promise<Message[]> {
-  return messages
+  return messages;
+}
+
+export async function sendMessage(
+  draft: string,
+  previousResponseId: string | null,
+): Promise<MessageThread> {
+  const { data } = await api.post<MessageThread>("/messages", {
+    content: draft,
+    previous_response_id: previousResponseId,
+  });
+  return data;
 }

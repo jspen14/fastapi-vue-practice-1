@@ -2,13 +2,24 @@
 import { ref } from "vue";
 
 import type { Message } from "../../types";
+import MessageDisplay from "./MessageDisplay.vue";
 import MessageInput from "./MessageInput.vue";
 
 defineProps<{
   messages: Message[];
+  waiting: boolean;
 }>();
 
+const emit = defineEmits<{ send: [content: string] }>();
+
 const draft = ref("");
+
+function submit() {
+  const content = draft.value.trim();
+  if (!content) return;
+  emit("send", content);
+  draft.value = "";
+}
 </script>
 
 <template>
@@ -17,12 +28,10 @@ const draft = ref("");
       <p class="label">Chat</p>
     </header>
     <div class="thread">
-      <p v-for="message in messages" :key="message.id" class="message">
-        {{ message.content }}
-      </p>
+      <MessageDisplay :messages="messages" :waiting="waiting" />
     </div>
     <footer class="composer">
-      <MessageInput v-model="draft" />
+      <MessageInput v-model="draft" @send="submit" />
     </footer>
   </section>
 </template>
@@ -51,10 +60,9 @@ const draft = ref("");
 
 .thread {
   flex: 1;
-  padding: 0 1.5rem;
-}
-
-.message {
-  margin: 0 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 0.75rem 1.5rem;
 }
 </style>

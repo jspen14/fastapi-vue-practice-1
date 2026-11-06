@@ -8,3 +8,8 @@ export interface Message {
   role: Role;
   content: string;
 }
+
+export interface MessageThread {
+  response_id: string;
+  messages: Message[];
+}
