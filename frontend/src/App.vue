@@ -10,6 +10,7 @@ const previousResponseIdKey = 'previous_response_id'
 const messages = ref<Message[]>([])
 const responseId = ref<string | null>(null)
 const waiting = ref(false)
+let sendId = 0
 
 onMounted(async () => {
   const stored = localStorage.getItem(previousResponseIdKey)
@@ -18,7 +19,16 @@ onMounted(async () => {
   messages.value = await getMessages(stored)
 })
 
+function onNewChat() {
+  sendId += 1
+  messages.value = []
+  responseId.value = null
+  waiting.value = false
+  localStorage.removeItem(previousResponseIdKey)
+}
+
 async function onSend(content: string) {
+  const id = ++sendId
   messages.value = [
     ...messages.value,
     { id: crypto.randomUUID(), role: Role.User, content },
@@ -26,17 +36,23 @@ async function onSend(content: string) {
   waiting.value = true
   try {
     const thread = await sendMessage(content, responseId.value)
+    if (id !== sendId) return
     messages.value = thread.messages
     responseId.value = thread.response_id
     localStorage.setItem(previousResponseIdKey, thread.response_id)
   } finally {
-    waiting.value = false
+    if (id === sendId) waiting.value = false
   }
 }
 </script>
 
 <template>
-  <ChatInterface :messages="messages" :waiting="waiting" @send="onSend" />
+  <ChatInterface
+    :messages="messages"
+    :waiting="waiting"
+    @send="onSend"
+    @new-chat="onNewChat"
+  />
 </template>
 
 <style>
