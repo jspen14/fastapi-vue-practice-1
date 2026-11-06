@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import type { Message, MessageThread } from "./types";
+import type { Message, MessageThread, Recommendation } from "./types";
 
 export const api = axios.create({
   baseURL: "/api",
@@ -11,6 +11,11 @@ export async function getMessages(responseId: string): Promise<Message[]> {
     `/messages/${encodeURIComponent(responseId)}`,
   );
   return data.messages;
+}
+
+export async function getRecommendations(): Promise<Recommendation[]> {
+  const { data } = await api.get<Recommendation[]>("/recommendations");
+  return data;
 }
 
 export async function sendMessage(

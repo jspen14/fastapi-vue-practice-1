@@ -13,3 +13,8 @@ export interface MessageThread {
   response_id: string;
   messages: Message[];
 }
+
+export interface Recommendation {
+  id: number;
+  text: string;
+}
